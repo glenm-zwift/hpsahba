@@ -14,6 +14,26 @@ if [[ $(pwd) != *"/contrib/dkms" ]]; then
 	exit
 fi
 
+# Check if symbolic link exists for current kernel version
+KERNEL_VERSION=$(uname -r)
+KERNEL_MAJOR_MINOR=$(echo $KERNEL_VERSION | cut -d '.' -f1,2)
+KERNEL_PATCHSET="${KERNEL_MAJOR_MINOR}-patchset-v2"
+KERNEL_DIR="../../kernel"
+
+echo "Current kernel version: $KERNEL_VERSION"
+echo "Looking for patchset: $KERNEL_PATCHSET"
+
+# Check if patchset directory or symlink exists for current kernel
+if [ ! -e "$KERNEL_DIR/$KERNEL_PATCHSET" ]; then
+    echo "No patchset found for kernel $KERNEL_MAJOR_MINOR, creating symbolic link to 5.18-patchset-v2"
+    cd "$KERNEL_DIR"
+    ln -s ./5.18-patchset-v2 "$KERNEL_PATCHSET"
+    cd - > /dev/null
+    echo "Created symbolic link: $KERNEL_PATCHSET -> 5.18-patchset-v2"
+else
+    echo "Patchset for kernel $KERNEL_MAJOR_MINOR already exists"
+fi
+
 ./patch.sh
 
 apt update
